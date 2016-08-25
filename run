@@ -1,0 +1,184 @@
+#! /bin/sh
+f_cp()
+{
+	hh=""
+	hs=""
+	bs=0
+	bo=0
+	for i in $@
+	do
+		if [ $i = "-s" ]
+		then
+			bs=1 
+		fi
+		if [ $bs = 1 ]
+		then
+			hs="$hs $i"
+		else
+			i="$i.cpp"
+			hh="$hh $i"
+			if [ ! -f $i ]
+			then
+				bo=1
+				echo "no such file: $i"
+			fi
+		fi
+	done
+	hs=${hs# -s}
+	if [ $bo = 1 ]
+	then
+		exit 0
+	fi
+	cc="clang++ -std=c++11 -lpthread -lm -lunp -lrt -Wall"
+	echo "compileing:"
+	echo "----------------"
+	$cc $hh -o "$1".out
+	echo "----------------"
+	echo "end of compile!"
+
+	if [ -f "$1".out ]
+	then
+
+		echo "running:"
+		echo "----------------"
+		a="./"$1".out $hs"
+		$a
+		printf "\r\n"
+		echo "----------------"
+		echo "end of run!"
+		rm -f "$1".out
+	fi
+
+	exit 0
+}
+
+f_ja()
+{
+	bo=0
+	hf=""
+	main=$1
+	for i in $@
+	do
+		i="$i".java
+		hf="$hf $i"
+		if [ ! -f $i ]
+		then
+			bo=1
+			echo "no file $i"
+		fi
+	done
+	if [ $bo = 1 ]
+	then
+		exit 0
+	fi
+		cc="gcj --main=$main -o $main.out"
+		echo "compileing:"
+		echo "----------------"
+		$cc $hf
+		echo "----------------"
+		echo "end of compile!"
+
+	if [ -f "$main".out ]
+	then
+		echo "running:"
+		echo "----------------"
+		a="./$main.out" 
+		$a
+		printf "\r\n"
+		echo "----------------"
+		echo "end of run!"
+		rm -f "$main".out
+	fi
+
+	exit 0
+}
+
+f_c()
+{
+	hh=""
+	hs=""
+	bs=0
+	bo=0
+	for i in $@
+	do
+		if [ $i = "-s" ]
+		then
+			bs=1 
+		fi
+		if [ $bs = 1 ]
+		then
+			hs="$hs $i"
+		else
+			i="$i.c"
+			hh="$hh $i"
+			if [ ! -f $i ]
+			then
+				bo=1
+				echo "no such file: $i"
+			fi
+		fi
+	done
+	hs=${hs# -s}
+	if [ $bo = 1 ]
+	then
+		exit 0
+	fi
+	cc="clang -lm -lpthread -lunp -lrt -Wall"
+	echo "compileing:"
+		echo "----------------"
+	$cc $hh -o "$1".out
+		echo "----------------"
+	echo "end of compile!"
+
+	if [ -f "$1".out ]
+	then
+
+		echo "running:"
+		echo "----------------"
+		a="./"$1".out $hs"
+		$a
+		printf "\r\n"
+		echo "----------------"
+		echo "end of run!"
+		rm -f "$1".out
+	fi
+
+	exit 0
+}
+
+
+#start
+if [ "$#" -ge 2 ] 
+then
+	case "$1" in
+		-cpp) 	hd=$@ 
+			hd=${hd#-cpp}
+			f_cp $hd ;;
+		-java)	hd=$@
+			hd=${hd#-java}
+			f_ja $hd ;;
+		-c)	hd=$@
+			hd=${hd#-c}
+			f_c $hd ;;
+		*) echo "error: Try \"run -h\" for more information";;
+	esac
+	exit 0
+
+elif [ "$#" = 1 ]
+then
+	case $1 in
+		-h|--help)
+			echo "run [option] file1 file2..."
+			echo "-c,     --compile c programe"
+			echo "-cpp,   --compile cpp programe"
+			echo "-java,  --compile java programe";;
+		-cpp|-c|-java)
+			echo "no input file";;
+		*)
+			echo "error: Try \"run -h\" for more information";;
+	esac
+	 
+else
+	echo "error: Try \"run -h\" for more information"
+fi
+
